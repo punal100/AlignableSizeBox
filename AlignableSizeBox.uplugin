@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "AlignableSizeBox",
+	"Description": "Size Box with Allignment Option, Similar to Scale Box But Without any Scaling",
+	"Category": "Widget Component",
+	"CreatedBy": "Punal Manalan",
+	"CreatedByURL": "https://github.com/punal100",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "AlignableSizeBox",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
