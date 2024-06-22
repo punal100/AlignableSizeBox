@@ -481,6 +481,130 @@ void SPunal_Box::OnArrangeChildren(const FGeometry &AllottedGeometry, FArrangedC
 					bAlignChildren = false;
 				}
 			}
+			else
+			{
+				//Stretch_Type.Get() == Punal_SizeBox_Stretch_Type_Enum::No_Stretch
+				const float CurrentRatioWidth = (AllottedGeometry.GetLocalSize().X / AllottedGeometry.GetLocalSize().Y);
+
+				bool bFitMaxRatio = (CurrentRatioWidth > MaxAspectRatioWidth && MaxAspectRatioWidth != 0);
+				bool bFitMinRatio = (CurrentRatioWidth < MinAspectRatioWidth && MinAspectRatioWidth != 0);
+				if (bFitMaxRatio || bFitMinRatio)
+				{
+					XAlignmentResult = AlignChild<Orient_Horizontal>(AllottedGeometry.GetLocalSize().X, ChildSlot, SlotPadding);
+					YAlignmentResult = AlignChild<Orient_Vertical>(AllottedGeometry.GetLocalSize().Y, ChildSlot, SlotPadding);
+
+					float NewWidth;
+					float NewHeight;
+
+					//NewWidth = XAlignmentResult.Size;
+					//NewHeight = YAlignmentResult.Size;
+					//if (NewWidth > NewHeight)
+
+					if (bFitMaxRatio)
+					{
+						if ((XAlignmentResult.Size / YAlignmentResult.Size) > MaxAspectRatioWidth)
+						{
+							NewHeight = YAlignmentResult.Size;
+							//const float MaxAspectRatioWidth = MaxAspectRatioWidth;
+							NewWidth = MaxAspectRatioWidth * NewHeight;
+						}
+						else
+						{
+							NewWidth = XAlignmentResult.Size;
+							const float MaxAspectRatioHeight = 1.0f / MaxAspectRatioWidth;
+							NewHeight = MaxAspectRatioHeight * NewWidth;
+						}
+					}
+					else
+					{
+						if ((XAlignmentResult.Size / YAlignmentResult.Size) > MinAspectRatioWidth)
+						{
+							NewHeight = YAlignmentResult.Size;
+							//const float MinAspectRatioWidth = MinAspectRatioWidth;
+							NewWidth = MinAspectRatioWidth * NewHeight;
+						}
+						else
+						{
+							NewWidth = XAlignmentResult.Size;
+							const float MinAspectRatioHeight = 1.0f / MinAspectRatioWidth;
+							NewHeight = MinAspectRatioHeight * NewWidth;
+						}
+					}
+
+					const float MaxWidth = AllottedGeometry.Size.X - SlotPadding.GetTotalSpaceAlong<Orient_Horizontal>();
+					const float MaxHeight = AllottedGeometry.Size.Y - SlotPadding.GetTotalSpaceAlong<Orient_Vertical>();
+
+					//Punal Manalan, NOTE: Original Code By Unreal Engine
+					//---
+					// If NewWidth Is Higher than MaxWidth, It Reduces Both NewWidth and NewHeight
+					// But If NewHeight(Even After Reduction[If Done]), It Reduces Both NewHeight and NewWidth Again
+					//
+					// Ideally There Should be an Order At Which Reuduction Should be Done
+					// Also Toggle To Do Both or Only One as well
+					//
+					// =======
+					// //Assuming Below Enum Exists
+					// enum Check_Geometry{Check_Width_First, Check_Height_First}
+					// enum Calculate_Geometry{Calculate_Only_One, Calculate_Both} 
+					// ======= 
+					// 
+					// Here, The Order Is Fixed Like this,
+					// Check_Height_First
+					// Calculate_Both
+					//---
+					// 
+					//if (NewWidth > MaxWidth)
+					//{
+					//	//Punal Manalan, NOTE: This Reduces Size of Current Width To Match Max Width
+					//	//Adjusts Current Height in terms of Ratio of New Width
+					//	float Scale = MaxWidth / NewWidth;
+					//	NewWidth *= Scale;
+					//	NewHeight *= Scale;
+					//}
+					//
+					//if (NewHeight > MaxHeight)
+					//{
+					//	//Punal Manalan, NOTE: This Reduces Size of Current Height To Match Max Height
+					//	//Adjusts Current Width in terms of Ratio of New Height
+					//	float Scale = MaxHeight / NewHeight;
+					//	NewWidth *= Scale;
+					//	NewHeight *= Scale;
+					//}
+
+					if (NewWidth > MaxWidth)
+					{
+						//Punal Manalan, NOTE: This Reduces Size of Current Width To Match Max Width
+						//Adjusts Current Height in terms of Ratio of New Width
+						float Scale = MaxWidth / NewWidth;
+						NewWidth *= Scale;
+						NewHeight *= Scale;
+					}
+
+					if (NewHeight > MaxHeight)
+					{
+						//Punal Manalan, NOTE: This Reduces Size of Current Height To Match Max Height
+						//Adjusts Current Width in terms of Ratio of New Height
+						float Scale = MaxHeight / NewHeight;
+						NewWidth *= Scale;
+						NewHeight *= Scale;
+					}
+
+					// Punal Manalan, NOTE: This Does Vertical and Horizontal Allignment In Terms of Given Ratio
+					// XAlignmentResult.Offset = ((MaxWidth / 2.0) - (NewWidth / 2.0)) + ((MaxWidth / 2.0) * Horizontal_Allignment_Ratio.Get().Get());
+					// YAlignmentResult.Offset = ((MaxHeight / 2.0) - (NewHeight / 2.0)) + ((MaxHeight / 2.0) * Vertical_Allignment_Ratio.Get().Get());
+
+					XAlignmentResult.Offset = ((MaxWidth / 2.0) - (NewWidth / 2.0));
+					YAlignmentResult.Offset = ((MaxHeight / 2.0) - (NewHeight / 2.0));
+
+					XAlignmentResult.Offset += ((XAlignmentResult.Offset) * Horizontal_Allignment_Ratio.Get().Get());
+					YAlignmentResult.Offset += ((YAlignmentResult.Offset) * Vertical_Allignment_Ratio.Get().Get());
+
+					XAlignmentResult.Size = NewWidth;
+					YAlignmentResult.Size = NewHeight;
+
+					bAlignChildren = false;
+				}
+			}
 		}
 
 		if (bAlignChildren)
